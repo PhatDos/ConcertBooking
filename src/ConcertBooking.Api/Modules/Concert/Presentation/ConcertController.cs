@@ -52,8 +52,7 @@ public class ConcertController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(
-    CreateConcertRequest request)
+    public async Task<IActionResult> Create(CreateConcertRequest request)
     {
         try
         {
@@ -62,26 +61,27 @@ public class ConcertController : ControllerBase
                 request.Description,
                 request.Venue,
                 request.StartTime,
-                request.EndTime
-            );
+                request.EndTime);
 
             _context.Concerts.Add(concert);
 
             await _context.SaveChangesAsync();
 
-            return Ok(new
-            {
-                concert.Id,
-                concert.Name,
-                concert.Status
-            });
+            return CreatedAtAction(
+                nameof(GetAll),
+                null,
+                new
+                {
+                    concert.Id,
+                    concert.Name,
+                    concert.Status
+                });
         }
         catch (ArgumentException ex)
         {
             return BadRequest(ex.Message);
         }
     }
-
 
     [HttpPost("{concertId:guid}/ticket-categories")]
     public async Task<IActionResult> AddTicketCategory(
@@ -92,7 +92,7 @@ public class ConcertController : ControllerBase
             .AnyAsync(x => x.Id == concertId);
 
         if (!concertExists)
-            return NotFound();
+            return NotFound("Concert not found.");
 
         var ticketCategory = new TicketCategory(
             concertId,
@@ -105,6 +105,12 @@ public class ConcertController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        return Ok(ticketCategory);
+        return Ok(new
+        {
+            ticketCategory.Id,
+            ticketCategory.Name,
+            ticketCategory.Price,
+            ticketCategory.TotalQuantity
+        });
     }
 }

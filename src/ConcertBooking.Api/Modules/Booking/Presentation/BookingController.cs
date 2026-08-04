@@ -91,6 +91,16 @@ public class BookingController : ControllerBase
                 });
             }
 
+            // Validate concert
+            var concert = await _context.Concerts
+                .FirstOrDefaultAsync(x => x.Id == request.ConcertId);
+
+            if (concert == null)
+            {
+                return BadRequest(
+                    $"Concert '{request.ConcertId}' not found.");
+            }
+
             var booking = new BookingEntity(
                 request.UserId,
                 request.ConcertId,
@@ -101,21 +111,20 @@ public class BookingController : ControllerBase
 
             foreach (var item in request.Items)
             {
+                // Validate ticket belongs to this concert
                 var ticket = await _context.TicketCategories
-                    .FirstOrDefaultAsync(x => x.Id == item.TicketCategoryId);
+                    .FirstOrDefaultAsync(x =>
+                        x.Id == item.TicketCategoryId &&
+                        x.ConcertId == request.ConcertId);
 
                 if (ticket == null)
-                    return BadRequest($"Ticket category '{item.TicketCategoryId}' not found.");
+                {
+                    return BadRequest(
+                        $"Ticket category '{item.TicketCategoryId}' not found for concert '{request.ConcertId}'.");
+                }
 
-                try
-                {
-                    // Reserve tickets before payment
-                    ticket.Reserve(item.Quantity);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    return BadRequest(ex.Message);
-                }
+                // Reserve tickets
+                ticket.Reserve(item.Quantity);
 
                 var bookingItem = new BookingItemEntity(
                     booking.Id,
@@ -130,17 +139,24 @@ public class BookingController : ControllerBase
 
             await _context.SaveChangesAsync();
 
-            return Ok(new
-            {
-                booking.Id,
-                booking.Status,
-                booking.SubTotal,
-                booking.DiscountAmount,
-                booking.FinalAmount,
-                booking.ExpiresAt
-            });
+            return CreatedAtAction(
+                nameof(Get),
+                new { id = booking.Id },
+                new
+                {
+                    booking.Id,
+                    booking.Status,
+                    booking.SubTotal,
+                    booking.DiscountAmount,
+                    booking.FinalAmount,
+                    booking.ExpiresAt
+                });
         }
         catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (InvalidOperationException ex)
         {
             return BadRequest(ex.Message);
         }
@@ -155,7 +171,7 @@ public class BookingController : ControllerBase
             .FirstOrDefaultAsync(x => x.Id == id);
 
         if (booking == null)
-            return NotFound();
+            return NotFound("Booking not found.");
 
         switch (request.Status)
         {
@@ -172,7 +188,7 @@ public class BookingController : ControllerBase
                 break;
 
             default:
-                return BadRequest();
+                return BadRequest("Invalid booking status.");
         }
 
         await _context.SaveChangesAsync();
@@ -194,7 +210,7 @@ public class BookingController : ControllerBase
             .FirstOrDefaultAsync(x => x.Id == id);
 
         if (booking == null)
-            return NotFound();
+            return NotFound("Booking not found.");
 
         var voucher = await _context.Vouchers
             .FirstOrDefaultAsync(x => x.Id == request.VoucherId);
@@ -205,31 +221,31 @@ public class BookingController : ControllerBase
         try
         {
             voucher.Redeem();
+
+            decimal discount = voucher.DiscountType switch
+            {
+                DiscountType.FixedAmount => voucher.DiscountValue,
+
+                DiscountType.Percentage =>
+                    booking.SubTotal * voucher.DiscountValue / 100,
+
+                _ => 0
+            };
+
+            booking.ApplyVoucher(voucher.Id, discount);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                booking.Id,
+                booking.DiscountAmount,
+                booking.FinalAmount
+            });
         }
         catch (InvalidOperationException ex)
         {
             return BadRequest(ex.Message);
         }
-
-        decimal discount = voucher.DiscountType switch
-        {
-            DiscountType.FixedAmount => voucher.DiscountValue,
-
-            DiscountType.Percentage =>
-                booking.SubTotal * voucher.DiscountValue / 100,
-
-            _ => 0
-        };
-
-        booking.ApplyVoucher(voucher.Id, discount);
-
-        await _context.SaveChangesAsync();
-
-        return Ok(new
-        {
-            booking.Id,
-            booking.FinalAmount,
-            booking.DiscountAmount
-        });
     }
 }
