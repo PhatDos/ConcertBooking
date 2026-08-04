@@ -32,28 +32,47 @@ public class PaymentController : ControllerBase
         if (booking.Status != BookingStatus.PendingPayment)
             return BadRequest("Booking is not pending payment.");
 
-        foreach (var item in booking.Items)
+        await using var transaction =
+            await _context.Database.BeginTransactionAsync();
+
+        try
         {
-            var ticket = await _context.TicketCategories
-                .FirstOrDefaultAsync(x => x.Id == item.TicketCategoryId);
+            foreach (var item in booking.Items)
+            {
+                var ticket = await _context.TicketCategories
+                    .FirstOrDefaultAsync(x => x.Id == item.TicketCategoryId);
 
-            if (ticket == null)
-                return BadRequest(
-                    $"Ticket category '{item.TicketCategoryId}' not found.");
+                if (ticket == null)
+                    return BadRequest(
+                        $"Ticket category '{item.TicketCategoryId}' not found.");
 
-            ticket.ConfirmReservation(item.Quantity);
+                // Convert reserved tickets into sold tickets
+                ticket.ConfirmReservation(item.Quantity);
+            }
+
+            booking.Confirm();
+
+            await _context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+
+            return Ok(new
+            {
+                booking.Id,
+                booking.Status,
+                request.PaymentMethod,
+                Message = "Payment completed successfully."
+            });
         }
-
-        booking.Confirm();
-
-        await _context.SaveChangesAsync();
-
-        return Ok(new
+        catch (Exception ex)
         {
-            booking.Id,
-            booking.Status,
-            request.PaymentMethod,
-            Message = "Payment completed successfully."
-        });
+            await transaction.RollbackAsync();
+
+            return StatusCode(500, new
+            {
+                Message = "Payment failed.",
+                Error = ex.Message
+            });
+        }
     }
 }

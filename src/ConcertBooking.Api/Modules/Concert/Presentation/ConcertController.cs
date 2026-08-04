@@ -55,24 +55,31 @@ public class ConcertController : ControllerBase
     public async Task<IActionResult> Create(
     CreateConcertRequest request)
     {
-        var concert = new ConcertEntity(
-            request.Name,
-            request.Description,
-            request.Venue,
-            request.StartTime,
-            request.EndTime
-        );
-
-        _context.Concerts.Add(concert);
-
-        await _context.SaveChangesAsync();
-
-        return Ok(new
+        try
         {
-            concert.Id,
-            concert.Name,
-            concert.Status
-        });
+            var concert = new ConcertEntity(
+                request.Name,
+                request.Description,
+                request.Venue,
+                request.StartTime,
+                request.EndTime
+            );
+
+            _context.Concerts.Add(concert);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                concert.Id,
+                concert.Name,
+                concert.Status
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
 

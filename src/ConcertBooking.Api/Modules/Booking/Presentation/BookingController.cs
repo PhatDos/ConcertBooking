@@ -75,61 +75,75 @@ public class BookingController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(CreateBookingRequest request)
     {
-        // Idempotency
-        var existingBooking = await _context.Bookings
-            .FirstOrDefaultAsync(x => x.IdempotencyKey == request.IdempotencyKey);
-
-        if (existingBooking != null)
+        try
         {
+            // Prevent duplicate booking caused by client retries
+            var existingBooking = await _context.Bookings
+                .FirstOrDefaultAsync(x => x.IdempotencyKey == request.IdempotencyKey);
+
+            if (existingBooking != null)
+            {
+                return Ok(new
+                {
+                    existingBooking.Id,
+                    existingBooking.Status,
+                    existingBooking.FinalAmount
+                });
+            }
+
+            var booking = new BookingEntity(
+                request.UserId,
+                request.ConcertId,
+                request.IdempotencyKey,
+                DateTime.UtcNow.AddMinutes(10));
+
+            _context.Bookings.Add(booking);
+
+            foreach (var item in request.Items)
+            {
+                var ticket = await _context.TicketCategories
+                    .FirstOrDefaultAsync(x => x.Id == item.TicketCategoryId);
+
+                if (ticket == null)
+                    return BadRequest($"Ticket category '{item.TicketCategoryId}' not found.");
+
+                try
+                {
+                    // Reserve tickets before payment
+                    ticket.Reserve(item.Quantity);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return BadRequest(ex.Message);
+                }
+
+                var bookingItem = new BookingItemEntity(
+                    booking.Id,
+                    item.TicketCategoryId,
+                    item.Quantity,
+                    ticket.Price);
+
+                booking.AddItem(bookingItem);
+
+                _context.BookingItems.Add(bookingItem);
+            }
+
+            await _context.SaveChangesAsync();
+
             return Ok(new
             {
-                existingBooking.Id,
-                existingBooking.Status,
-                existingBooking.FinalAmount
+                booking.Id,
+                booking.Status,
+                booking.SubTotal,
+                booking.DiscountAmount,
+                booking.FinalAmount,
+                booking.ExpiresAt
             });
         }
-
-        var booking = new BookingEntity(
-            request.UserId,
-            request.ConcertId,
-            request.IdempotencyKey,
-            DateTime.UtcNow.AddMinutes(10));
-
-        _context.Bookings.Add(booking);
-
-        foreach (var item in request.Items)
+        catch (ArgumentException ex)
         {
-            var ticket = await _context.TicketCategories
-                .FirstOrDefaultAsync(x => x.Id == item.TicketCategoryId);
-
-            if (ticket == null)
-                return BadRequest($"Ticket category '{item.TicketCategoryId}' not found.");
-
-            // Reserve ticket
-            ticket.Reserve(item.Quantity);
-
-            var bookingItem = new BookingItemEntity(
-                booking.Id,
-                item.TicketCategoryId,
-                item.Quantity,
-                ticket.Price);
-
-            booking.AddItem(bookingItem);
-
-            _context.BookingItems.Add(bookingItem);
+            return BadRequest(ex.Message);
         }
-
-        await _context.SaveChangesAsync();
-
-        return Ok(new
-        {
-            booking.Id,
-            booking.Status,
-            booking.SubTotal,
-            booking.DiscountAmount,
-            booking.FinalAmount,
-            booking.ExpiresAt
-        });
     }
 
     [HttpPatch("{id:guid}/status")]
