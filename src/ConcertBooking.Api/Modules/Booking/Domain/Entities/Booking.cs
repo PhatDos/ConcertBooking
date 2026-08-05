@@ -18,7 +18,7 @@ public class Booking : BaseEntity
         DateTime expiresAt)
     {
         if (string.IsNullOrWhiteSpace(idempotencyKey))
-            throw new ArgumentException(nameof(idempotencyKey));
+            throw new ArgumentException("Idempotency key is required.");
 
         UserId = userId;
         ConcertId = concertId;

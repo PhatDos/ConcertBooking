@@ -17,13 +17,13 @@ public class TicketCategory : BaseEntity
     int displayOrder)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException(nameof(name));
+            throw new ArgumentException("Ticket category name is required.");
 
         if (price <= 0)
-            throw new ArgumentException(nameof(price));
+            throw new ArgumentException("Ticket price must be greater than zero.");
 
         if (totalQuantity <= 0)
-            throw new ArgumentException(nameof(totalQuantity));
+            throw new ArgumentException("Total quantity must be greater than zero.");
 
         ConcertId = concertId;
         Name = name.Trim();
@@ -59,7 +59,7 @@ public class TicketCategory : BaseEntity
     public void Reserve(int quantity)
     {
         if (quantity <= 0)
-            throw new ArgumentException(nameof(quantity));
+            throw new ArgumentException("Quantity must be greater than zero.");
 
         if (AvailableQuantity < quantity)
             throw new InvalidOperationException("Not enough available tickets.");
@@ -71,7 +71,7 @@ public class TicketCategory : BaseEntity
     public void ConfirmReservation(int quantity)
     {
         if (quantity <= 0)
-            throw new ArgumentException(nameof(quantity));
+            throw new ArgumentException("Quantity must be greater than zero.");
 
         if (ReservedQuantity < quantity)
             throw new InvalidOperationException("Reserved quantity is insufficient.");
@@ -84,7 +84,7 @@ public class TicketCategory : BaseEntity
     public void ReleaseReservation(int quantity)
     {
         if (quantity <= 0)
-            throw new ArgumentException(nameof(quantity));
+            throw new ArgumentException("Quantity must be greater than zero.");
 
         if (ReservedQuantity < quantity)
             throw new InvalidOperationException("Reserved quantity is insufficient.");
@@ -96,7 +96,7 @@ public class TicketCategory : BaseEntity
     public void UpdatePrice(decimal price)
     {
         if (price <= 0)
-            throw new ArgumentException(nameof(price));
+            throw new ArgumentException("Price must be greater than zero.");
 
         if (ReservedQuantity > 0 || SoldQuantity > 0)
             throw new InvalidOperationException(

@@ -1,9 +1,10 @@
 ﻿using ConcertBooking.Api.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ConcertBooking.Api.Modules.Concert.Application.DTOs;
 using ConcertEntity = ConcertBooking.Api.Modules.Concert.Domain.Entities.Concert;
 using ConcertBooking.Api.Modules.Concert.Domain.Entities;
+using ConcertBooking.Api.Modules.Concert.Application.DTOs.Requests;
+using ConcertBooking.Api.Modules.Concert.Application.DTOs.Responses;
 
 namespace ConcertBooking.Api.Modules.Concert.Presentation;
 

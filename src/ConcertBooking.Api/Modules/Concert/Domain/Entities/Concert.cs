@@ -96,10 +96,10 @@ public class Concert : BaseEntity
                 "Only draft concert can be updated.");
 
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException(nameof(name));
+            throw new ArgumentException("Concert name is required.");
 
         if (string.IsNullOrWhiteSpace(venue))
-            throw new ArgumentException(nameof(venue));
+            throw new ArgumentException("Venue is required.");
 
         if (endTime <= startTime)
             throw new ArgumentException(

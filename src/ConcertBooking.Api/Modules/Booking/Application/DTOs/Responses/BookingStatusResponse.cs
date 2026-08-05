@@ -1,6 +1,6 @@
 ﻿using ConcertBooking.Api.Modules.Booking.Domain.Enums;
 
-namespace ConcertBooking.Api.Modules.Booking.Application.DTOs;
+namespace ConcertBooking.Api.Modules.Booking.Application.DTOs.Responses;
 
 public sealed record BookingStatusResponse(
     Guid Id,

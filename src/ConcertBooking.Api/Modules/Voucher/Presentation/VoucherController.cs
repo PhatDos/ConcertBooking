@@ -1,7 +1,8 @@
 ﻿using ConcertBooking.Api.Infrastructure.Persistence;
-using ConcertBooking.Api.Modules.Voucher.Application.DTOs;
-using VoucherEntity = ConcertBooking.Api.Modules.Voucher.Domain.Entities.Voucher;
+using ConcertBooking.Api.Modules.Voucher.Application.DTOs.Requests;
+using ConcertBooking.Api.Modules.Voucher.Application.DTOs.Responses;
 using Microsoft.AspNetCore.Mvc;
+using VoucherEntity = ConcertBooking.Api.Modules.Voucher.Domain.Entities.Voucher;
 
 namespace ConcertBooking.Api.Modules.Voucher.Presentation;
 
@@ -33,14 +34,16 @@ public class VoucherController : ControllerBase
 
             await _context.SaveChangesAsync();
 
-            return Ok(new VoucherResponse(
-                voucher.Id,
-                voucher.Code,
-                voucher.DiscountType,
-                voucher.DiscountValue,
-                voucher.TotalQuantity,
-                voucher.StartDate,
-                voucher.EndDate));
+            return Created(
+                $"/api/vouchers/{voucher.Id}",
+                new VoucherResponse(
+                    voucher.Id,
+                    voucher.Code,
+                    voucher.DiscountType,
+                    voucher.DiscountValue,
+                    voucher.TotalQuantity,
+                    voucher.StartDate,
+                    voucher.EndDate));
         }
         catch (ArgumentException ex)
         {

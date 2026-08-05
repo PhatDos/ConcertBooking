@@ -18,16 +18,16 @@ public class Voucher : BaseEntity
         DateTime endDate)
     {
         if (string.IsNullOrWhiteSpace(code))
-            throw new ArgumentException(nameof(code));
+            throw new ArgumentException("Voucher code is required.");
 
         if (discountValue <= 0)
-            throw new ArgumentException(nameof(discountValue));
+            throw new ArgumentException("Discount value must be greater than zero.");
 
         if (totalQuantity <= 0)
-            throw new ArgumentException(nameof(totalQuantity));
+            throw new ArgumentException("Total quantity must be greater than zero.");
 
         if (endDate <= startDate)
-            throw new ArgumentException(nameof(endDate));
+            throw new ArgumentException("End date must be after start date.");
 
         Code = code.Trim();
         DiscountType = discountType;

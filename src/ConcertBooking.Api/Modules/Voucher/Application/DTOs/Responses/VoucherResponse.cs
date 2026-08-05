@@ -1,6 +1,6 @@
 ﻿using ConcertBooking.Api.Modules.Voucher.Domain.Enums;
 
-namespace ConcertBooking.Api.Modules.Voucher.Application.DTOs;
+namespace ConcertBooking.Api.Modules.Voucher.Application.DTOs.Responses;
 
 public sealed record VoucherResponse(
     Guid Id,

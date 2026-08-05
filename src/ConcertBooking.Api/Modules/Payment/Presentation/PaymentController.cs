@@ -1,6 +1,7 @@
 ﻿using ConcertBooking.Api.Infrastructure.Persistence;
 using ConcertBooking.Api.Modules.Booking.Domain.Enums;
-using ConcertBooking.Api.Modules.Payment.Application.DTOs;
+using ConcertBooking.Api.Modules.Payment.Application.DTOs.Requests;
+using ConcertBooking.Api.Modules.Payment.Application.DTOs.Responses;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
