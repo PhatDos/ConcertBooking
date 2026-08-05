@@ -23,8 +23,7 @@ public class ConcertController : ControllerBase
     {
         var concerts = await _context.Concerts
             .Include(x => x.TicketCategories)
-            .Select(c => new
-            {
+            .Select(c => new ConcertResponse(
                 c.Id,
                 c.Name,
                 c.Description,
@@ -32,20 +31,18 @@ public class ConcertController : ControllerBase
                 c.StartTime,
                 c.EndTime,
                 c.Status,
-
-                TicketCategories = c.TicketCategories
+                c.TicketCategories
                     .OrderBy(t => t.DisplayOrder)
-                    .Select(t => new
-                    {
+                    .Select(t => new TicketCategoryResponse(
                         t.Id,
                         t.Name,
                         t.Price,
                         t.TotalQuantity,
                         t.ReservedQuantity,
                         t.SoldQuantity,
-                        t.AvailableQuantity
-                    })
-            })
+                        t.AvailableQuantity))
+                    .ToList()
+            ))
             .ToListAsync();
 
         return Ok(concerts);
@@ -70,12 +67,12 @@ public class ConcertController : ControllerBase
             return CreatedAtAction(
                 nameof(GetAll),
                 null,
-                new
-                {
+                new CreateConcertResponse(
                     concert.Id,
                     concert.Name,
                     concert.Status
-                });
+                )
+            );
         }
         catch (ArgumentException ex)
         {
@@ -105,12 +102,11 @@ public class ConcertController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        return Ok(new
-        {
+        return Ok(new AddTicketCategoryResponse(
             ticketCategory.Id,
             ticketCategory.Name,
             ticketCategory.Price,
             ticketCategory.TotalQuantity
-        });
+        ));
     }
 }

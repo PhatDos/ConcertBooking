@@ -70,3 +70,23 @@ Retry payment
 The current implementation demonstrates the reservation workflow.
 
 Production-scale optimization (distributed cache, message queue, distributed locking) is not implemented.
+
+## Not Implemented
+
+The following features are intentionally out of scope for this assignment:
+
+- Authentication and Authorization
+- Seat selection (Assigned Seating)
+- Concert publish workflow
+- Voucher update/delete APIs
+- Refund workflow
+- Payment gateway integration
+- Automatic booking expiration background job
+- Ticket release after booking expiration
+- Booking status audit history
+- Voucher redemption history
+- Per-user voucher usage limitation
+- Distributed cache (Redis)
+- Message queue for flash-sale processing
+- Distributed locking
+- Pagination for list endpoints

@@ -1,36 +1,27 @@
 # Assumptions
 
-To keep the assignment focused on the core booking workflow, several assumptions are made.
+To keep the assignment focused on the core booking workflow, the following assumptions are made.
 
-## Authentication
+## General
 
-Authentication and Authorization are out of scope.
+- Concert tickets follow the **General Admission** model (tickets are sold by category without assigned seats).
+- Assigned seating is out of scope because the assignment focuses on flash-sale booking and overselling prevention.
+- Authentication and Authorization are assumed to be handled by an external identity provider and are not implemented.
+- The system assumes three user roles:
+  - Customer
+  - Operator
+  - Administrator
+- Only Operators can create concerts.
+- Concerts are created in **Draft** status.
+- Publish workflow is out of scope.
+- Payment gateway integration is mocked.
+- Payment is completed immediately after a successful mock payment.
+- Booking expires automatically after **10 minutes** if payment is not completed.
+- A booking can apply at most one voucher.
+- Voucher supports both **Percentage** and **Fixed Amount** discounts.
+- Partial payment is not supported.
 
-Users are assumed to be authenticated by an external identity provider.
-
----
-
-## User Roles
-
-The system assumes three roles:
-
-- Customer
-- Operator
-- Administrator
-
-Role-based authorization is not implemented in this assignment.
-
----
-
-## Concert
-
-Concerts are created in Draft status.
-
-Publishing concerts is not implemented.
-
----
-
-## Booking
+## Booking Workflow
 
 Booking supports four states:
 
@@ -39,25 +30,7 @@ Booking supports four states:
 - Cancelled
 - Expired
 
-Bookings expire after 10 minutes.
+## Technical
 
----
-
-## Voucher
-
-One booking can apply at most one voucher.
-
-Voucher supports
-
-- Percentage
-- Fixed Amount
-
----
-
-## Payment
-
-Payment gateway is mocked.
-
-Payment is completed immediately.
-
-Partial payment is not supported.
+- GUID is used as the primary key because it can be generated at the application layer and simplifies future distributed system evolution.
+- For production systems with high write throughput, sequential GUIDs (`Guid.CreateVersion7()` or SQL Server `NEWSEQUENTIALID()`) are recommended to reduce index fragmentation.

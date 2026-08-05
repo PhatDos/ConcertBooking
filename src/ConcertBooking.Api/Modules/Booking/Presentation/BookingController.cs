@@ -31,42 +31,37 @@ public class BookingController : ControllerBase
         if (booking == null)
             return NotFound();
 
-        return Ok(new
-        {
+        return Ok(new BookingResponse(
             booking.Id,
             booking.Status,
             booking.SubTotal,
             booking.DiscountAmount,
             booking.FinalAmount,
             booking.ExpiresAt,
-
-            Items = booking.Items.Select(x => new
-            {
-                x.TicketCategoryId,
-                x.Quantity,
-                x.UnitPrice,
-                x.TotalPrice
-            })
-        });
+            booking.Items
+                .Select(x => new BookingItemResponse(
+                    x.TicketCategoryId,
+                    x.Quantity,
+                    x.UnitPrice,
+                    x.TotalPrice))
+                .ToList()
+        ));
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
         var bookings = await _context.Bookings
-            .Select(x => new
-            {
+            .Select(x => new BookingSummaryResponse(
                 x.Id,
                 x.UserId,
                 x.ConcertId,
                 x.Status,
-
                 x.SubTotal,
                 x.DiscountAmount,
                 x.FinalAmount,
-
                 x.ExpiresAt
-            })
+            ))
             .ToListAsync();
 
         return Ok(bookings);
@@ -83,12 +78,14 @@ public class BookingController : ControllerBase
 
             if (existingBooking != null)
             {
-                return Ok(new
-                {
+                return Ok(new CreateBookingResponse(
                     existingBooking.Id,
                     existingBooking.Status,
-                    existingBooking.FinalAmount
-                });
+                    existingBooking.SubTotal,
+                    existingBooking.DiscountAmount,
+                    existingBooking.FinalAmount,
+                    existingBooking.ExpiresAt
+                ));
             }
 
             // Validate concert
@@ -142,15 +139,15 @@ public class BookingController : ControllerBase
             return CreatedAtAction(
                 nameof(Get),
                 new { id = booking.Id },
-                new
-                {
+                new CreateBookingResponse(
                     booking.Id,
                     booking.Status,
                     booking.SubTotal,
                     booking.DiscountAmount,
                     booking.FinalAmount,
                     booking.ExpiresAt
-                });
+                )
+            );
         }
         catch (ArgumentException ex)
         {
@@ -193,11 +190,10 @@ public class BookingController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        return Ok(new
-        {
+        return Ok(new BookingStatusResponse(
             booking.Id,
             booking.Status
-        });
+        ));
     }
 
     [HttpPost("{id:guid}/apply-voucher")]
@@ -236,12 +232,11 @@ public class BookingController : ControllerBase
 
             await _context.SaveChangesAsync();
 
-            return Ok(new
-            {
+            return Ok(new ApplyVoucherResponse(
                 booking.Id,
                 booking.DiscountAmount,
                 booking.FinalAmount
-            });
+            ));
         }
         catch (InvalidOperationException ex)
         {

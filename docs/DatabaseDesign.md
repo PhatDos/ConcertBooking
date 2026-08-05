@@ -187,3 +187,10 @@ The following indexes are recommended:
 | Voucher | Code (Unique) | Fast voucher lookup |
 | TicketCategory | ConcertId | Retrieve tickets of a concert |
 | Booking | Status | Monitor pending bookings |
+
+
+## Concurrency
+
+TicketCategory uses SQL Server RowVersion for optimistic concurrency control.
+
+This helps reduce ticket overselling when multiple booking requests reserve tickets simultaneously.

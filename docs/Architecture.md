@@ -4,23 +4,23 @@
 
 The system is designed using a simplified Modular Monolith architecture.
 
-Each business module is organized into:
+Each business module is organized into the following layers:
 
 - Presentation
 - Application
 - Domain
 
-Infrastructure concerns are shared.
+Infrastructure components are shared across all modules.
 
 ```
 Client
       │
-HTTP REST API
+ HTTP REST API
       │
-ASP.NET Core
+ ASP.NET Core
       │
 ────────────────────────
-│      Modules         │
+│       Modules        │
 ────────────────────────
 │ Concert             │
 │ Booking             │
@@ -30,21 +30,39 @@ ASP.NET Core
       │
 Entity Framework Core
       │
-SQL Server
+ SQL Server
 ```
+
+---
+
+## Aggregate Roots
+
+Each business module exposes a single Aggregate Root.
+
+- Concert
+  - TicketCategory
+
+- Booking
+  - BookingItem
+
+- Voucher
+
+- Payment
+
+Business rules are enforced inside Aggregate Roots to maintain domain consistency.
 
 ---
 
 ## Why Modular Monolith?
 
-This project focuses on code organization instead of distributed deployment.
+This project focuses on demonstrating clean code organization rather than distributed deployment.
 
 Advantages:
 
-- Easy to develop
-- Easy to understand
+- Easy to develop and maintain
 - Clear module boundaries
-- Suitable for startup scale
+- Easier debugging
+- Suitable for startup-scale systems
 - Can be migrated to Microservices in the future
 
 ---
@@ -58,68 +76,76 @@ Advantages:
 
 ### Booking
 
+- Create bookings
 - Reserve tickets
-- Booking workflow
-- Booking status
+- Manage booking workflow
+- Manage booking status
 
 ### Voucher
 
-- Voucher management
-- Discount calculation
+- Manage vouchers
+- Calculate discounts
 
 ### Payment
 
-- Mock payment processing
-- Confirm booking
+- Process mock payments
+- Confirm bookings after successful payment
 
 ---
 
-## Layer Responsibility
+## Layer Responsibilities
 
 ### Presentation
 
-Controllers
+- Controllers
+- HTTP endpoints
 
 ### Application
 
-DTOs
+- DTOs
+- Request / Response models
 
 ### Domain
 
-Business Rules
+- Entities
+- Business rules
+- Domain logic
 
 ### Infrastructure
 
-EF Core
+- Entity Framework Core
+- DbContext
+- Entity Configurations
+- SQL Server persistence
 
-Persistence
-
-Configurations
+---
 
 ## Design Decisions
 
-The project follows a Modular Monolith architecture.
+The project follows a simplified Modular Monolith architecture because it provides:
 
-Reasons:
+- Clear module separation
+- Faster development during the assignment
+- Easier debugging
+- Better maintainability
+- A migration path to Microservices if the system grows
 
-- Easy to develop within the assignment timeframe.
-- Clear module boundaries.
-- Easier debugging.
-- Suitable for startup-scale systems.
-- Can be migrated to Microservices later if necessary.
+Business logic is implemented inside Domain Entities to keep controllers thin and maintain separation of concerns.
 
-Business logic is placed inside Domain Entities to keep controllers thin and maintain separation of concerns.
+---
 
 # Future Improvements
 
-If more development time is available, the following features should be implemented:
+This project intentionally prioritizes correctness of the booking workflow and clean architecture over feature completeness.
+
+If more development time is available, the following improvements should be implemented:
 
 - VoucherRedemption entity to prevent voucher abuse per user.
 - BookingStatusHistory for audit logging.
-- Authentication & Authorization using JWT.
+- Authentication and Authorization using JWT.
 - Background worker for automatic booking expiration.
-- Payment callback integration.
+- Payment gateway callback integration.
 - Distributed cache (Redis).
-- Message Queue for flash sale traffic.
-- Distributed locking to reduce ticket overselling.
+- Message Queue for flash-sale traffic.
+- Distributed locking to further reduce ticket overselling.
 - Seat allocation for assigned seating concerts.

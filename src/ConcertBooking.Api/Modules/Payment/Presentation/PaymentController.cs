@@ -56,22 +56,20 @@ public class PaymentController : ControllerBase
 
             await transaction.CommitAsync();
 
-            return Ok(new
-            {
+            return Ok(new PaymentResponse(
                 booking.Id,
                 booking.Status,
                 request.PaymentMethod,
-                Message = "Payment completed successfully."
-            });
+                "Payment completed successfully."
+            ));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             await transaction.RollbackAsync();
 
             return StatusCode(500, new
             {
-                Message = "Payment failed.",
-                Error = ex.Message
+                Message = "Payment failed."
             });
         }
     }

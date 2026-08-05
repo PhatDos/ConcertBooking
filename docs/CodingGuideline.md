@@ -6,21 +6,21 @@ The project follows a simplified Modular Monolith architecture.
 
 ```
 Modules
- ├── Booking
- ├── Concert
- ├── Payment
- └── Voucher
+├── Booking
+├── Concert
+├── Payment
+└── Voucher
 ```
 
 Each module contains:
 
+- Presentation
 - Application
 - Domain
-- Presentation
 
 Infrastructure contains:
 
-- EF Core
+- Entity Framework Core
 - DbContext
 - Entity Configurations
 
@@ -28,75 +28,102 @@ Infrastructure contains:
 
 ## Naming Convention
 
-Classes
+### Classes
 
 - PascalCase
 
-Methods
+### Methods
 
 - PascalCase
 
-Private fields
+### Properties
+
+- PascalCase
+
+### Private Fields
 
 - _camelCase
 
-Properties
+### DTOs
 
-- PascalCase
-
-DTO
+Examples:
 
 - CreateBookingRequest
 - UpdateBookingStatusRequest
+- ApplyVoucherRequest
 
-Configurations
+### Entity Configurations
+
+Examples:
 
 - BookingConfiguration
 - ConcertConfiguration
+- TicketCategoryConfiguration
+
+---
+
+## Module Naming
+
+Modules use singular names:
+
+- Booking
+- Concert
+- Voucher
+- Payment
+
+Some modules share the same name as their Aggregate Root entity.
+
+To avoid namespace conflicts, C# aliases are used when necessary.
+
+Example:
+
+```csharp
+using BookingEntity = ConcertBooking.Api.Modules.Booking.Domain.Entities.Booking;
+using ConcertEntity = ConcertBooking.Api.Modules.Concert.Domain.Entities.Concert;
+```
 
 ---
 
 ## Domain Rules
 
-Business rules should stay inside Domain Entities whenever possible.
+Business rules should remain inside Domain Entities whenever possible.
 
-Example:
+Examples:
 
 - Reserve tickets
-- Confirm reservation
-- Redeem voucher
+- Confirm reservations
+- Redeem vouchers
+- Calculate booking totals
 
-Controllers only orchestrate requests.
+Controllers should only orchestrate requests and delegate business logic to the domain.
 
 ---
 
 ## Error Handling
 
-Business validation returns HTTP 400.
+Business validation returns **HTTP 400 Bad Request**.
 
 Examples:
 
-- Not enough tickets
+- Not enough available tickets
 - Invalid concert time
 - Voucher expired
 - Voucher out of stock
 
-Entity exceptions are translated into BadRequest responses in controllers.
+Domain exceptions are translated into appropriate HTTP responses in controllers.
 
 ---
 
 ## Persistence
 
-Entity Framework Core
-
-SQL Server
-
-Optimistic concurrency using RowVersion for TicketCategory.
+- Entity Framework Core
+- SQL Server
+- Optimistic concurrency using SQL Server RowVersion for TicketCategory
 
 ---
 
 ## API Documentation
 
-Swagger is enabled in Development.
+Swagger is enabled in the Development environment.
 
-All APIs are documented automatically through ASP.NET Core.
+All APIs are automatically documented using ASP.NET Core OpenAPI support.

@@ -20,11 +20,4 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Modules\Concert\Domain\Events\" />
-    <Folder Include="Modules\Concert\Domain\ValueObjects\" />
-    <Folder Include="Modules\Concert\Domain\Exceptions\" />
-    <Folder Include="Modules\Concert\Infrastructure\" />
-  </ItemGroup>
-
 </Project>

@@ -19,27 +19,32 @@ public class VoucherController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(CreateVoucherRequest request)
     {
-        var voucher = new VoucherEntity(
-            request.Code,
-            request.DiscountType,
-            request.DiscountValue,
-            request.TotalQuantity,
-            request.StartDate,
-            request.EndDate);
-
-        _context.Vouchers.Add(voucher);
-
-        await _context.SaveChangesAsync();
-
-        return Ok(new
+        try
         {
-            voucher.Id,
-            voucher.Code,
-            voucher.DiscountType,
-            voucher.DiscountValue,
-            voucher.TotalQuantity,
-            voucher.StartDate,
-            voucher.EndDate
-        });
+            var voucher = new VoucherEntity(
+                request.Code,
+                request.DiscountType,
+                request.DiscountValue,
+                request.TotalQuantity,
+                request.StartDate,
+                request.EndDate);
+
+            _context.Vouchers.Add(voucher);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new VoucherResponse(
+                voucher.Id,
+                voucher.Code,
+                voucher.DiscountType,
+                voucher.DiscountValue,
+                voucher.TotalQuantity,
+                voucher.StartDate,
+                voucher.EndDate));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }
